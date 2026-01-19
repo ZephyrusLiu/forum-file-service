@@ -1,0 +1,35 @@
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Environment variables
+.env
+.env.*
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+
+# Build output
+dist/
+build/
+
+# Temp files
+tmp/
+temp/
+
+# Uploads (if you ever add local fallback)
+uploads/
+
+# Docker overrides
+docker-compose.override.yml
