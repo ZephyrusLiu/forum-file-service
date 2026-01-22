@@ -1,8 +1,8 @@
 require("dotenv").config();
 const app = require("./app");
 
-const PORT = process.env.PORT || 4000;
+const port = process.env.PORT || 4003;
 
-app.listen(PORT, () => {
-  console.log(`File service running on port ${PORT}`);
+app.listen(port, () => {
+  console.log(`[file-service] listening on port ${port}`);
 });
