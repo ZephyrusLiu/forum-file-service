@@ -1,20 +1,25 @@
 const svc = require("../services/files.service");
 
-exports.presign = async (req, res) => {
+exports.upload = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const { scope, kind, postId, filename, contentType } = req.body || {};
-    const result = await svc.presignUpload({
+    const { scope, kind, postId } = req.body || {};
+    const file = req.file;
+
+    if (!file) return res.status(400).json({ error: "BAD_REQUEST", message: "file is required" });
+
+    const result = await svc.uploadToS3({
       userId,
       scope,
       kind,
       postId,
-      filename,
-      contentType,
+      filename: file.originalname,
+      contentType: file.mimetype,
+      buffer: file.buffer,
     });
 
-    res.json(result);
+    res.status(201).json(result);
   } catch (err) {
     res.status(err.status || 500).json({ error: err.code || "ERROR", message: err.message });
   }

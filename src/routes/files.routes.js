@@ -1,10 +1,13 @@
 const router = require("express").Router();
+const multer = require("multer");
 const c = require("../controllers/files.controller");
 
-// POST /files/presign
-router.post("/presign", c.presign);
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB (adjust)
+});
 
-// GET /files/url?key=...
+router.post("/upload", upload.single("file"), c.upload);
 router.get("/url", c.url);
 
 module.exports = router;
