@@ -1,7 +1,7 @@
 function httpError(status, code, message) {
-  const err = new Error(message);
+  const err = new Error(message || code);
   err.status = status;
-  err.code = code || "ERROR";
+  err.code = code;
   return err;
 }
 

@@ -12,13 +12,13 @@ module.exports = function auth(req, res, next) {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Payload contract:
+    // Payload contract used in your curl tokens:
     // {
     //   userId: string,
-    //   type: "user" | "admin" | "super",
-    //   status: "unverified" | "active" | "banned"
+    //   type: "user"|"admin"|"super",
+    //   status: "unverified"|"active"|"banned",
+    //   iat, exp
     // }
-
     if (!decoded.userId) {
       return res.status(401).json({ error: "Invalid token payload" });
     }

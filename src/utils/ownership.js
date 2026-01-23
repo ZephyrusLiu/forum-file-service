@@ -1,9 +1,14 @@
-function isOwnedUsersKey(key, userId) {
-  return typeof key === "string" && key.startsWith(`users/${userId}/`);
+function isOwnedKeyByUser(key, userId) {
+  if (typeof key !== "string") return false;
+  return key.startsWith(`users/${userId}/`) || key.startsWith(`posts/${userId}/`);
 }
 
-function isOwnedPostsKey(key, userId) {
-  return typeof key === "string" && key.startsWith(`posts/${userId}/`);
+function isUsersKey(key) {
+  return typeof key === "string" && key.startsWith("users/");
 }
 
-module.exports = { isOwnedUsersKey, isOwnedPostsKey };
+function isPostsKey(key) {
+  return typeof key === "string" && key.startsWith("posts/");
+}
+
+module.exports = { isOwnedKeyByUser, isUsersKey, isPostsKey };
