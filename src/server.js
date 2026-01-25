@@ -1,13 +1,16 @@
-require("dotenv").config();
+const path = require("path");
+const dotenv = require("dotenv");
+
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
+dotenv.config({ path: path.resolve(__dirname, ".env"), override: true });
+
+//console.log(process.env)
+
 const app = require("./app");
 
-<<<<<<< HEAD
-const PORT = process.env.PORT || 4000;
+const PORT = process.env.PORT || 4003;
 
 app.listen(PORT, () => {
-  console.log(`File service running on port ${PORT}`);
+  console.log(`[file-service] listening on ${PORT}`);
 });
-=======
-const port = process.env.PORT || 4003;
-app.listen(port, () => console.log(`[file-service] listening on ${port}`));
->>>>>>> SCRUM-59-D5-AR-1-File-service-S3-upload-implementation-returns-URL-NO-DB
+

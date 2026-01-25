@@ -16,6 +16,7 @@ async function uploadToS3({ userId, scope, kind, postId, filename, contentType, 
 
   let key;
 
+	
   if (scope === "users") {
     if (kind !== "avatar" && kind !== "cover") throw httpError(400, "BAD_REQUEST", "kind must be avatar|cover");
     if (!String(contentType).startsWith("image/")) throw httpError(400, "BAD_REQUEST", "Only images allowed");
@@ -29,6 +30,7 @@ async function uploadToS3({ userId, scope, kind, postId, filename, contentType, 
   } else {
     throw httpError(400, "BAD_REQUEST", "scope must be users or posts");
   }
+  
 
   await s3.send(
     new PutObjectCommand({
@@ -38,6 +40,9 @@ async function uploadToS3({ userId, scope, kind, postId, filename, contentType, 
       ContentType: contentType,
     })
   );
+
+
+
 
   const publicUrl = `https://${BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
   return { key, url: publicUrl };

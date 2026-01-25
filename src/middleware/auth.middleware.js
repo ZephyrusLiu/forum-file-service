@@ -3,30 +3,38 @@ const jwt = require("jsonwebtoken");
 module.exports = function auth(req, res, next) {
   const header = req.headers.authorization;
 
-  if (!header || !header.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "Unauthorized" });
+  if (!header || !header.toLowerCase().startsWith("bearer ")) {
+    return res.status(401).json({ error: "Missing Bearer token" });
   }
 
-  const token = header.split(" ")[1];
+  const token = header.split(" ", 1)[1] || header.split(" ")[1];
 
   try {
+    console.log("JWT_SECRET: ",process.env.JWT_SECRET)
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Payload contract used in your curl tokens:
-    // {
-    //   userId: string,
-    //   type: "user"|"admin"|"super",
-    //   status: "unverified"|"active"|"banned",
-    //   iat, exp
-    // }
-    if (!decoded.userId) {
-      return res.status(401).json({ error: "Invalid token payload" });
+    const userId = decoded.sub || decoded.id || decoded.userId;
+    if (!userId) {
+      return res.status(401).json({ error: "Token missing sub/id" });
+    }
+
+    const role = (decoded.type || "").toLowerCase();
+    const status = (decoded.status || "").toLowerCase();
+
+    if (!["unverified", "active", "banned"].includes(status)) {
+      return res.status(401).json({ error: "Invalid status claim" });
+    }
+
+    if (status === "banned") {
+      return res.status(403).json({ error: "User is banned" });
     }
 
     req.user = {
-      id: decoded.userId,
-      type: decoded.type,
-      status: decoded.status,
+      id: String(userId),
+      role,
+      status,
+      verified: status !== "unverified",
+      ...decoded,
     };
 
     next();
@@ -34,3 +42,4 @@ module.exports = function auth(req, res, next) {
     return res.status(401).json({ error: "Invalid token" });
   }
 };
+
