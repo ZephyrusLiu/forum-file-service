@@ -1,6 +1,8 @@
 function isOwnedKeyByUser(key, userId) {
   if (typeof key !== "string") return false;
-  return key.startsWith(`users/${userId}/`) || key.startsWith(`posts/${userId}/`);
+
+  // ✅ only user-private files are owner-bound
+  return key.startsWith(`users/${userId}/`);
 }
 
 function isUsersKey(key) {
@@ -11,4 +13,9 @@ function isPostsKey(key) {
   return typeof key === "string" && key.startsWith("posts/");
 }
 
-module.exports = { isOwnedKeyByUser, isUsersKey, isPostsKey };
+// ✅ NEW: public reads for posts (anyone can view)
+function isPublicReadKey(key) {
+  return isPostsKey(key);
+}
+
+module.exports = { isOwnedKeyByUser, isUsersKey, isPostsKey, isPublicReadKey };
