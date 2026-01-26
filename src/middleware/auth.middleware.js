@@ -10,7 +10,7 @@ module.exports = function auth(req, res, next) {
   const token = header.split(" ", 1)[1] || header.split(" ")[1];
 
   try {
-    console.log("JWT_SECRET: ",process.env.JWT_SECRET)
+    
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const userId = decoded.sub || decoded.id || decoded.userId;

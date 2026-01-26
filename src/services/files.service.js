@@ -16,21 +16,16 @@ async function uploadToS3({ userId, scope, kind, postId, filename, contentType, 
 
   let key;
 
-	
   if (scope === "users") {
     if (kind !== "avatar" && kind !== "cover") throw httpError(400, "BAD_REQUEST", "kind must be avatar|cover");
     if (!String(contentType).startsWith("image/")) throw httpError(400, "BAD_REQUEST", "Only images allowed");
     key = buildUserKey({ userId, kind, filename });
   } else if (scope === "posts") {
     if (!postId) throw httpError(400, "BAD_REQUEST", "postId is required for posts scope");
-    // allow images/pdf if you want
-    // const ok = contentType.startsWith("image/") || contentType === "application/pdf";
-    // if (!ok) throw httpError(400, "BAD_REQUEST", "Unsupported type");
     key = buildPostKey({ userId, postId, filename });
   } else {
     throw httpError(400, "BAD_REQUEST", "scope must be users or posts");
   }
-  
 
   await s3.send(
     new PutObjectCommand({
@@ -41,17 +36,31 @@ async function uploadToS3({ userId, scope, kind, postId, filename, contentType, 
     })
   );
 
-
-
-
+  // NOTE: this url will only work if your bucket/prefix is public.
+  // You are already using presigned GET, so rely on presigned url instead in UI.
   const publicUrl = `https://${BUCKET}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
   return { key, url: publicUrl };
 }
 
 async function presignDownload({ userId, key }) {
   if (!key) throw httpError(400, "BAD_REQUEST", "key required");
+
+  // must be a known prefix
+  const usersKey = isUsersKey(key);
+  const postsKey = isPostsKey(key);
+  if (!usersKey && !postsKey) throw httpError(403, "FORBIDDEN", "Not allowed");
+
+  // ✅ PUBLIC READ: posts/* can be viewed by anyone
+  // (still keep uploads protected elsewhere)
+  if (postsKey) {
+    const cmd = new GetObjectCommand({ Bucket: BUCKET, Key: key });
+    const url = await getSignedUrl(s3, cmd, { expiresIn: GET_EXPIRES });
+    return { url, expiresIn: GET_EXPIRES };
+  }
+
+  // ✅ PRIVATE READ: users/* is owner-only
+  if (!userId) throw httpError(401, "UNAUTHORIZED", "Missing user");
   if (!isOwnedKeyByUser(key, userId)) throw httpError(403, "FORBIDDEN", "Not allowed");
-  if (!isUsersKey(key) && !isPostsKey(key)) throw httpError(403, "FORBIDDEN", "Not allowed");
 
   const cmd = new GetObjectCommand({ Bucket: BUCKET, Key: key });
   const url = await getSignedUrl(s3, cmd, { expiresIn: GET_EXPIRES });
